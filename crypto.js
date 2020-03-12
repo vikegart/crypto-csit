@@ -34,15 +34,28 @@ const processCrypt = (message, key) => {
     for (let i = 0; i < message.length; i++) {
         //message[i]-символ сообщения
         //key[i%key.length]-символ ключа
+        //indexOfKeySymbol номер строки!, вычисляется по символу ключа
+        //i % key.length эмулирует цикличное повторение написания ключа над открытым текстом
         let indexOfKeySymbol = ruArr.indexOf(key[i % key.length]);
         DEBUG && console.log(ruArr.indexOf(key[i % key.length]) + 1)
         DEBUG && console.log(arrFromTable[indexOfKeySymbol][1]);
+        //номер столбца, вычисляется по символу открытого текста под ключом
         let indexOfTextSymbol;
         DEBUG && console.log(arrFromTable[indexOfKeySymbol][1].indexOf(message[i]));
         indexOfTextSymbol = arrFromTable[indexOfKeySymbol][1].indexOf(message[i]);
         DEBUG && console.log(indexOfTextSymbol);
+        //если indexOfTextSymbol не нашелся, значит в этом столбце его нет, ищем в соседнем
+        //сверху или снизу в зависимости от того, в четной мы строке искали или нет 
+        //какой процесс идет - шифровка\дешифровка - вообще пох, функция одинакова везде
         if (indexOfTextSymbol === -1) {
             {
+                //этот код не имеет никакого смысла, т.к. добавляет одну и туже хрень в обоих
+                //случаях, но логика такова: если мы нашли в соседней строке этот символ из 
+                //сообщения, то мы не можем им же закодировать себя, мы должны в качестве
+                //его шифра брать символ из той строки, номер который лежит в indexOfKeySymbol, но
+                //из того же столбца. Пример: мы смотрим в строку Б и ищем букву "в", но ее там нет
+                //тогда мы смотрим в строку А,т.к. А и Б составляют ячейку, и находим "в" там. 
+                //тогда буква в зашифруется буквой т, которая стоит под в из строки а в строке Б.
                 if (isEven(indexOfKeySymbol)) {
                     indexOfTextSymbol = arrFromTable[indexOfKeySymbol + 1][1].indexOf(message[i]);
                     cryptogramma = cryptogramma + arrFromTable[indexOfKeySymbol][1][indexOfTextSymbol];
@@ -52,6 +65,9 @@ const processCrypt = (message, key) => {
                 }
             }
         } else {
+            //тут мы оказались, если нашли нужный символ в строке, на которую указал indexOfKeySymbol
+            //тогда просто смотрим в смежную строку (А смежно Б, В смежно Г и наборот) и меняем
+            //символ. Прим: искали в А а, нашли поменяли а на р и добавили р в криптограмму.
             if (isEven(indexOfKeySymbol)) {
                 cryptogramma = cryptogramma + arrFromTable[indexOfKeySymbol + 1][1][indexOfTextSymbol];
             } else {
