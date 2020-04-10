@@ -1,5 +1,6 @@
 const readline = require("readline");
 const crypto = require("./crypto");
+const fs = require("fs");
 
 const CRYPT_MSG = '1';
 const DECRYPT_MSG = '2';
@@ -17,22 +18,35 @@ const rl = readline.createInterface({
 
 rl.question(`Введите ${CRYPT_MSG} для шифра и ${DECRYPT_MSG} для дешифра: `, function (mode) {
     if (mode === CRYPT_MSG) {
-        rl.question("Введите ключ ", function (key) {
-            rl.question("Введите открытый текст ", function (message) {
-                const result = crypto(trimmedMsg(message), trimmedMsg(key));
-                console.log(`Ваша криптограмма: ${result}`);
-                rl.close();
+        fs.readFile("key.txt", "utf8",
+            function (error, data) {
+                if (error) throw error;
+                const key = data;
+                fs.readFile("openText.txt", "utf8",
+                    function (error, data) {
+                        if (error) throw error;
+                        const message = data;
+                        const result = crypto(trimmedMsg(message), trimmedMsg(key));
+                        console.log(`Ваша криптограмма: ${result}`);
+                        rl.close();
+                    });
             });
-        });
     }
     if (mode === DECRYPT_MSG) {
-        rl.question("Введите ключ ", function (key) {
-            rl.question("Введите криптограмму ", function (message) {
-                const result = crypto(message, trimmedMsg(key));
-                console.log(`Исходное сообщение: ${result}`);
-                rl.close();
+        fs.readFile("key.txt", "utf8",
+            function (error, data) {
+                if (error) throw error;
+                const key = data;
+                console.log('Ввод криптограммы из файла');
+                fs.readFile("crypt.txt", "utf8",
+                    function (error, data) {
+                        if (error) throw error;
+                        const message = data;
+                        const result = crypto(trimmedMsg(message), trimmedMsg(key));
+                        console.log(`Исходное сообщение: ${result}`);
+                        rl.close();
+                    });
             });
-        });
     }
 });
 
